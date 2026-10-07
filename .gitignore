@@ -1,0 +1,76 @@
+# ══════════════════════════════════════════════════
+#  Python
+# ══════════════════════════════════════════════════
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+agentic-control-plane/.venv/
+
+# ══════════════════════════════════════════════════
+#  Data (tracked by DVC, not Git)
+# ══════════════════════════════════════════════════
+data/raw/
+data/harmonized/
+data/features/
+data/production_logs/
+data/registry.db
+
+# ══════════════════════════════════════════════════
+#  ML Artifacts & Databases
+# ══════════════════════════════════════════════════
+mlruns/
+mlflow.db
+mlops.db
+*.sqlite
+*.sqlite3
+
+# ══════════════════════════════════════════════════
+#  Reports (generated, can be reproduced)
+# ══════════════════════════════════════════════════
+reports/drift/*.html
+reports/drift/prometheus_metrics.txt
+
+# ══════════════════════════════════════════════════
+#  DVC internals (cache is local)
+# ══════════════════════════════════════════════════
+/dvc.lock
+
+# ══════════════════════════════════════════════════
+#  Docker / OS / IDE
+# ══════════════════════════════════════════════════
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# ══════════════════════════════════════════════════
+#  Evidence store (runtime-generated JSON)
+# ══════════════════════════════════════════════════
+agentic-control-plane/evidence/EP-*.json
+agentic-control-plane/evidence/episode_*.json
+agentic-control-plane/evidence/_index.json
+
+# ══════════════════════════════════════════════════
+#  dbt build artifacts
+# ══════════════════════════════════════════════════
+dbt_warehouse/target/
+dbt_warehouse/logs/
+dbt_warehouse/dbt_packages/
+
+# ══════════════════════════════════════════════════
+#  Lockfile (too large for Git, reproducible via uv sync)
+# ══════════════════════════════════════════════════
+uv.lock
+
+# ══════════════════════════════════════════════════
+#  Gemini / Antigravity workspace artifacts
+# ══════════════════════════════════════════════════
+.gemini/

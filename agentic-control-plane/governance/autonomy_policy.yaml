@@ -1,0 +1,20 @@
+policy_version: "v1.0"
+rules:
+  investigate:
+    autonomy: autonomous
+  create_issue:
+    autonomy: autonomous
+    conditions:
+      blast_radius_max: 2
+  propose_retrain:
+    autonomy: autonomous
+  execute_retrain:
+    autonomy: human_approval_required
+  deploy_staging:
+    autonomy: human_approval_required
+  deploy_prod:
+    autonomy: human_approval_required
+  rollback_prod:
+    autonomy: human_approval_required
+  database_write:
+    autonomy: human_approval_required

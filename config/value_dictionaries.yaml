@@ -1,0 +1,313 @@
+# ============================================================
+# Dictionnaire des Valeurs BAAC — Référentiel Unique
+# Utilisé par : harmonizer.py, contracts.py, build_features.py
+# Source : Bible Warehouse Partie 3/20, documentation ONISR
+# ============================================================
+
+lum:
+  description: "Conditions d'éclairage"
+  table: caracteristiques
+  values:
+    1: "Plein jour"
+    2: "Crépuscule ou aube"
+    3: "Nuit sans éclairage public"
+    4: "Nuit avec éclairage public non allumé"
+    5: "Nuit avec éclairage public allumé"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+agg:
+  description: "Localisation (agglomération)"
+  table: caracteristiques
+  values:
+    1: "Hors agglomération"
+    2: "En agglomération"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+int:
+  description: "Type d'intersection"
+  table: caracteristiques
+  values:
+    1: "Hors intersection"
+    2: "Intersection en X"
+    3: "Intersection en T"
+    4: "Intersection en Y"
+    5: "Intersection à plus de 4 branches"
+    6: "Giratoire"
+    7: "Place"
+    8: "Passage à niveau"
+    9: "Autre intersection"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+atm:
+  description: "Conditions atmosphériques"
+  table: caracteristiques
+  values:
+    1: "Normales"
+    2: "Pluie légère"
+    3: "Pluie forte"
+    4: "Neige / grêle"
+    5: "Brouillard / fumée"
+    6: "Vent fort / tempête"
+    7: "Temps éblouissant"
+    8: "Temps couvert"
+    9: "Autre"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+col:
+  description: "Type de collision"
+  table: caracteristiques
+  values:
+    1: "Deux véhicules - frontal"
+    2: "Deux véhicules - par l'arrière"
+    3: "Deux véhicules - par le côté"
+    4: "Trois véhicules et plus - en chaîne"
+    5: "Trois véhicules et plus - collisions multiples"
+    6: "Autre collision"
+    7: "Sans collision"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+catr:
+  description: "Catégorie de route"
+  table: lieux
+  values:
+    1: "Autoroute"
+    2: "Route nationale"
+    3: "Route départementale"
+    4: "Voie communale"
+    5: "Hors réseau public"
+    6: "Parc de stationnement ouvert"
+    7: "Routes de métropole urbaine"
+    9: "Autre"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+circ:
+  description: "Régime de circulation"
+  table: lieux
+  values:
+    1: "À sens unique"
+    2: "Bidirectionnelle"
+    3: "Chaussées séparées"
+    4: "Voies d'affectation variable"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+surf:
+  description: "État de la surface de la chaussée"
+  table: lieux
+  values:
+    1: "Normale"
+    2: "Mouillée"
+    3: "Flaques"
+    4: "Inondée"
+    5: "Enneigée"
+    6: "Boue"
+    7: "Verglacée"
+    8: "Corps gras - Loss"
+    9: "Autre"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+situ:
+  description: "Situation de l'accident sur la voie"
+  table: lieux
+  values:
+    1: "Sur chaussée"
+    2: "Sur bande d'arrêt d'urgence"
+    3: "Sur accotement"
+    4: "Sur trottoir"
+    5: "Sur piste cyclable"
+    6: "Sur autre voie spéciale"
+    8: "Autre"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+catv:
+  description: "Catégorie du véhicule"
+  table: vehicules
+  values:
+    0: "Indéterminable"
+    1: "Bicyclette"
+    2: "Cyclomoteur < 50cm3"
+    3: "Voiturette"
+    4: "Scooter immatriculé"
+    5: "Motocyclette"
+    6: "Side-car"
+    7: "Véhicule léger seul (VL)"
+    8: "VL + caravane"
+    9: "VL + remorque"
+    10: "Véhicule utilitaire seul (VU)"
+    13: "Poids lourd seul (PL) > 3.5T"
+    14: "PL > 3.5T + remorque"
+    15: "Tracteur routier seul"
+    16: "Tracteur routier + semi-remorque"
+    17: "Transport en commun"
+    20: "Engin spécial"
+    21: "Tracteur agricole"
+    30: "Scooter < 50 cm3"
+    31: "Motocyclette > 50 cm3 et <= 125 cm3"
+    32: "Scooter > 50 cm3 et <= 125 cm3"
+    33: "Motocyclette > 125 cm3"
+    34: "Scooter > 125 cm3"
+    35: "Quad léger <= 50 cm3"
+    36: "Quad lourd > 50 cm3"
+    37: "Autobus"
+    38: "Autocar"
+    39: "Train"
+    40: "Tramway"
+    41: "3 roues motorisées <= 50 cm3"
+    42: "3 roues motorisées > 50 cm3 <= 125 cm3"
+    43: "3 roues motorisées > 125 cm3"
+    50: "EDP à moteur (trottinette électrique)"
+    60: "EDP sans moteur (trottinette)"
+    80: "VAE (vélo à assistance électrique)"
+    99: "Autre véhicule"
+  stable_since: 2005
+  known_breaks:
+    - year: 2019
+      type: "addition"
+      detail: "Ajout des catégories EDPM (50, 60) et VAE (80)"
+  missing_codes: [-1]
+
+choc:
+  description: "Point de choc principal"
+  table: vehicules
+  values:
+    0: "Aucun"
+    1: "Avant"
+    2: "Avant droit"
+    3: "Avant gauche"
+    4: "Arrière"
+    5: "Arrière droit"
+    6: "Arrière gauche"
+    7: "Côté droit"
+    8: "Côté gauche"
+    9: "Chocs multiples (tonneaux)"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+manv:
+  description: "Manoeuvre principale avant l'accident"
+  table: vehicules
+  values:
+    0: "Non renseigné"
+    1: "Sans changement de direction"
+    2: "Même sens, même file"
+    3: "Entre 2 files"
+    4: "En marche arrière"
+    5: "À contresens"
+    6: "En franchissant le terre-plein central"
+    7: "Dans le couloir bus, dans le même sens"
+    8: "Dans le couloir bus, dans le sens inverse"
+    9: "En s'insérant"
+    10: "En faisant demi-tour sur la chaussée"
+    11: "Changeant de file à gauche"
+    12: "Changeant de file à droite"
+    13: "Déporté à gauche"
+    14: "Déporté à droite"
+    15: "Tournant à gauche"
+    16: "Tournant à droite"
+    17: "Dépassant à gauche"
+    18: "Dépassant à droite"
+    19: "Traversant la chaussée"
+    20: "Manoeuvre de stationnement"
+    21: "Manoeuvre d'évitement"
+    22: "Ouverture de portière"
+    23: "Arrêté (hors stationnement)"
+    24: "En stationnement (avec occupants)"
+    25: "Circulant sur trottoir"
+    26: "Autres manoeuvres"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+catu:
+  description: "Catégorie d'usager"
+  table: usagers
+  values:
+    1: "Conducteur"
+    2: "Passager"
+    3: "Piéton"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+grav:
+  description: "Gravité de la blessure de l'usager"
+  table: usagers
+  values:
+    1: "Indemne"
+    2: "Tué"
+    3: "Blessé hospitalisé"
+    4: "Blessé léger"
+  stable_since: 2005
+  known_breaks:
+    - year: 2018
+      type: "semantic"
+      detail: >
+        Redéfinition de 'blessé hospitalisé' par l'OMS.
+        Avant 2018 : hospitalisé > 24h.
+        Après 2018 : hospitalisé > 6h ou hospitalisation confirmée.
+        La comparaison directe avant/après 2018 est invalide sans correction.
+  missing_codes: []
+
+sexe:
+  description: "Sexe de l'usager"
+  table: usagers
+  values:
+    1: "Masculin"
+    2: "Féminin"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+trajet:
+  description: "Motif du déplacement au moment de l'accident"
+  table: usagers
+  values:
+    0: "Non renseigné"
+    1: "Domicile – travail"
+    2: "Domicile – école"
+    3: "Courses – achats"
+    4: "Utilisation professionnelle"
+    5: "Promenade – loisirs"
+    9: "Autre"
+  stable_since: 2005
+  known_breaks: []
+  missing_codes: [-1]
+
+secu:
+  description: "Équipement de sécurité (pré-2023: colonne unique)"
+  table: usagers
+  values:
+    0: "Aucun équipement"
+    1: "Ceinture"
+    2: "Casque"
+    3: "Dispositif enfants"
+    4: "Gilet réfléchissant"
+    9: "Autre"
+  stable_since: 2005
+  known_breaks:
+    - year: 2023
+      type: "structural"
+      detail: >
+        La colonne unique 'secu' a été scindée en 3 colonnes :
+        'secu1', 'secu2', 'secu3'.
+        Le pipeline d'harmonisation doit rétro-créer les 3 colonnes
+        pour les données pré-2023.
+  missing_codes: [-1]

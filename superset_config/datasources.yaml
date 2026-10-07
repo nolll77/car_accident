@@ -1,0 +1,8 @@
+databases:
+  - database_name: mlops_db
+    sqlalchemy_uri: postgresql+psycopg2://mlops:mlops_password@db:5432/mlops_db
+    expose_in_sqllab: true
+    allow_run_async: false
+    allow_file_upload: false
+    allow_ctas: true
+    allow_cvas: true

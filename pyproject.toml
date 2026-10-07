@@ -1,0 +1,30 @@
+[project]
+name = "car-acc"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "alembic>=1.19.1",
+    "asyncpg>=0.31.0",
+    "boto3>=1.43.74",
+    "dbt-postgres>=1.11.0",
+    "dvc>=3.67.1",
+    "evidently>=0.7.23",
+    "fastapi>=0.141.1",
+    "feast>=0.47.0",
+    "httpx>=0.28.1",
+    "mlflow>=3.15.1",
+    "pandera>=0.32.1",
+    "pre-commit>=4.6.1",
+    "prometheus-client>=0.26.0",
+    "psycopg2-binary>=2.9.12",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
+    "pytest>=9.1.1",
+    "pytest-mock>=3.15.1",
+    "requests>=2.34.2",
+    "scikit-learn>=1.7.2",
+    "sqlalchemy>=2.0.51",
+    "uvicorn>=0.52.1",
+]

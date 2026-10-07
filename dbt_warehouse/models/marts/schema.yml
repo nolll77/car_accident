@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: dim_date
+    columns:
+      - name: date_key
+        tests:
+          - not_null
+          - unique
+  - name: dim_lieu
+    columns:
+      - name: lieu_key
+        tests:
+          - not_null
+          - unique
+  - name: dim_vehicule
+    columns:
+      - name: vehicule_key
+        tests:
+          - not_null
+          - unique
+  - name: dim_usager
+    columns:
+      - name: usager_key
+        tests:
+          - not_null
+          - unique
+  - name: dim_conditions
+    columns:
+      - name: conditions_key
+        tests:
+          - not_null
+          - unique
+  - name: fact_accident_usager
+    columns:
+      - name: usager_id
+        tests:
+          - not_null
+          - unique
+  - name: fact_accident
+    columns:
+      - name: num_acc
+        tests:
+          - not_null
+          - unique

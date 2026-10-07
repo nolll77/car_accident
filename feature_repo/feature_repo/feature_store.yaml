@@ -1,0 +1,13 @@
+project: car_acc
+registry: data/registry.db
+provider: local
+online_store:
+  type: redis
+  connection_string: "localhost:6379"
+offline_store:
+  type: postgres
+  host: localhost
+  port: 5432
+  database: mlops_db
+  user: mlops
+  password: mlops_password

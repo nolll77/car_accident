@@ -1,0 +1,58 @@
+{
+  "episode_id": "EP-0002",
+  "dedup_key": "648655c1db363b124903a97e20ba335d9be418d3383ada079b7d5faf963c85c7",
+  "timestamp_utc": "2026-09-30T13:42:23.624881+00:00",
+  "state_machine_trace": [
+    "DETECTED",
+    "INVESTIGATING",
+    "DIAGNOSED",
+    "PLANNED",
+    "AWAITING_APPROVAL"
+  ],
+  "risk": {
+    "id": "DATA-042"
+  },
+  "signal": {
+    "signal_id": "data_drift",
+    "value": 0.27,
+    "threshold": 0.2,
+    "source": "baac.evidently",
+    "observed_at": "2026-09-30T13:42:23.624881+00:00",
+    "dimensions": [
+      "age"
+    ]
+  },
+  "diagnosis": {
+    "risk_id": "DATA-042",
+    "agent": "data_specialist",
+    "confidence": 0.9,
+    "findings": [
+      {
+        "description": "Signal 'data_drift' = 0.27 > seuil 0.2 (source: baac.evidently)",
+        "evidence_ref": "baac.evidently"
+      }
+    ],
+    "ground_truth_risk_id": null
+  },
+  "action_proposal": {
+    "type": "deploy_prod",
+    "risk_id": "DATA-042",
+    "requested_by": "data_specialist",
+    "reversible": false,
+    "blast_radius": 0,
+    "parameters": {}
+  },
+  "policy_evaluation": {
+    "decision": "REQUIRE_APPROVAL",
+    "policy_version": "v1.0",
+    "matched_rule": "deploy_prod",
+    "reason_codes": [
+      "HUMAN_APPROVAL_REQUIRED"
+    ]
+  },
+  "human_approval": {
+    "required": true,
+    "approval_record": null
+  },
+  "execution": null
+}

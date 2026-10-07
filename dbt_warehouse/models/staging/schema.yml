@@ -1,0 +1,43 @@
+version: 2
+
+sources:
+  - name: baac_raw
+    schema: public
+    tables:
+      - name: raw_caracteristiques
+      - name: raw_lieux
+      - name: raw_vehicules
+      - name: raw_usagers
+
+models:
+  - name: stg_caracteristiques
+    columns:
+      - name: num_acc
+        tests:
+          - not_null
+          - unique
+      - name: lum
+        tests:
+          - accepted_values:
+              values: [-1, 1, 2, 3, 4, 5]
+  - name: stg_lieux
+    columns:
+      - name: num_acc
+        tests:
+          - not_null
+  - name: stg_vehicules
+    columns:
+      - name: id_vehicule
+        tests:
+          - not_null
+  - name: stg_usagers
+    columns:
+      - name: usager_id
+        tests:
+          - not_null
+          - unique
+      - name: grav
+        tests:
+          - not_null
+          - accepted_values:
+              values: [-1, 1, 2, 3, 4]

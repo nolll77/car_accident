@@ -1,0 +1,119 @@
+# ============================================================
+# Column Lineage — Traçabilité des Transformations BAAC
+# Documente le passage de chaque colonne brute vers la colonne harmonisée
+# Source : data_inventory_strategy.md §2.5, harmonisation_plan.md
+# ============================================================
+
+# --- Table CARACTERISTIQUES ---
+
+num_acc:
+  output_name: "Num_Acc"
+  output_type: "string"
+  source_columns:
+    - name: "Num_Acc"
+      years: "2005-2021"
+      original_format: "string or integer"
+      transformation: "cast to string, zero-pad to 12 chars"
+    - name: "Accident_Id"
+      years: "2022"
+      original_format: "string"
+      transformation: "rename to Num_Acc, zero-pad"
+    - name: "Num_Acc"
+      years: "2023-2024"
+      original_format: "string"
+      transformation: "identity (already correct format)"
+
+hrmn:
+  output_name: "hrmn"
+  output_type: "string"
+  output_format: "HH:MM"
+  source_columns:
+    - name: "hrmn"
+      years: "2005-2016"
+      original_format: "integer (ex: 1446)"
+      transformation: "str(val).zfill(4) → insert ':' → '14:46'"
+    - name: "hrmn"
+      years: "2017-2020"
+      original_format: "string HH:MM (generally correct)"
+      transformation: "validate regex, else NaN"
+    - name: "hrmn"
+      years: "2021-2022"
+      original_format: "corrupted (contains date strings like '2023-08-29')"
+      transformation: "set to NaN + flag has_time_corrupted=True"
+    - name: "hrmn"
+      years: "2023-2024"
+      original_format: "string HH:MM"
+      transformation: "identity"
+
+is_metropole:
+  output_name: "is_metropole"
+  output_type: "boolean"
+  derived_from: "dep"
+  logic: >
+    dep in ['01'..'95', '2A', '2B'] → True.
+    dep startswith '97' or '98' → False.
+    Handles Corse codes: '2A', '2B', '201', '202' → True.
+
+is_post_2018_grav_definition:
+  output_name: "is_post_2018_grav_definition"
+  output_type: "boolean"
+  derived_from: "source_year"
+  logic: "source_year >= 2018 → True, else False"
+
+source_year:
+  output_name: "source_year"
+  output_type: "integer"
+  derived_from: "filename"
+  logic: "Extracted from CSV filename pattern (e.g., 'caracteristiques-2024.csv' → 2024)"
+
+# --- Table LIEUX ---
+
+geo_level:
+  output_name: "geo_level"
+  output_type: "string"
+  derived_from: ["lat", "long", "com"]
+  logic: >
+    if lat and long are non-null → 'latlong'.
+    elif com is non-null → 'commune'.
+    else → 'departement'.
+
+# --- Table USAGERS ---
+
+secu_split:
+  output_names: ["secu1", "secu2", "secu3"]
+  output_type: "integer (nullable)"
+  source_columns:
+    - name: "secu"
+      years: "2005-2022"
+      original_format: "single integer code"
+      transformation: "secu1 = secu, secu2 = NaN, secu3 = NaN"
+    - name: ["secu1", "secu2", "secu3"]
+      years: "2023-2024"
+      original_format: "three separate integer columns"
+      transformation: "identity"
+
+usager_id:
+  output_name: "usager_id"
+  output_type: "string"
+  derived_from: ["Num_Acc", "id_vehicule", "num_veh", "row_index"]
+  logic: "Composite key: '{Num_Acc}_{id_vehicule}_{num_veh}_{index}'"
+
+territoire:
+  output_name: "territoire"
+  output_type: "string"
+  derived_from: "dep"
+  logic: >
+    dep in ['01'..'95', '2A', '2B'] → 'Métropole'.
+    dep in ['971'..'976'] → 'DOM'.
+    dep in ['986', '987', '988'] → 'COM'.
+
+# --- Missing Values Unification ---
+
+missing_values:
+  description: "Global unification of missing value representations"
+  input_representations: ["-1", "N/A", "NaN", "(1)", "", " "]
+  output_representation: "pd.NA / np.nan"
+  exceptions:
+    - column: "sexe"
+      value: -1
+      meaning: "Non renseigné (kept as valid category before unification)"

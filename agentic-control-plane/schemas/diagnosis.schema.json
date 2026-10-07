@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["risk_id", "agent", "confidence", "findings"],
+  "properties": {
+    "risk_id": { "type": "string" },
+    "agent": { "type": "string" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "findings": { "type": "array" }
+  }
+}

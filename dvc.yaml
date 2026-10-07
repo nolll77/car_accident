@@ -1,0 +1,26 @@
+stages:
+  generate_data:
+    cmd: PYTHONPATH=. .venv/bin/python scripts/generate_synthetic_baac.py
+    deps:
+      - scripts/generate_synthetic_baac.py
+    outs:
+      - data/raw/caracteristiques.csv
+      - data/raw/lieux.csv
+      - data/raw/usagers.csv
+      - data/raw/vehicules.csv
+
+  harmonize:
+    cmd: PYTHONPATH=. .venv/bin/python src/data/harmonizer.py
+    deps:
+      - src/data/harmonizer.py
+      - src/data/contracts.py
+      - config/value_dictionaries.yaml
+      - data/raw/caracteristiques.csv
+      - data/raw/lieux.csv
+      - data/raw/usagers.csv
+      - data/raw/vehicules.csv
+    outs:
+      - data/harmonized/caracteristiques.parquet
+      - data/harmonized/lieux.parquet
+      - data/harmonized/usagers.parquet
+      - data/harmonized/vehicules.parquet

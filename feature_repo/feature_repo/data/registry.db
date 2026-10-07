@@ -1,0 +1,42 @@
+
+<
+
+usager"	usager_idJcar_acc
+™éÓˆ„£‘¢ÖÎÕˆ‹Ü–
+>
+
+__dummy"
+__dummy_idJcar_acc
+™éÓ°¯¬‘¢ÖÎÕÀËø–1"$f039d67a-304c-4927-9b01-c06244956a52*¼ÖÎÕèãÔ;2ª
+°
+usagers_featurescar_accusager"	
+place"
+catu"
+grav"
+sexe"
+an_nais"
+
+trajet"
+is_metropole"
+
+age_bucket"
+is_motorise"
+lum_calculee"
+atm_simplifie"
+catr_derive"
+nb_accidents_zone"
+taux_gravite_zone"
+risque_relatif_catr*
+domaincar_acc2€†°–:ìevent_timestamp‚]
+[{"name": "usagers_harmonized_source", "query": "SELECT * FROM feature_matrix", "table": ""}ŠZfeast.infra.offline_stores.contrib.postgres_offline_store.postgres_source.PostgreSQLSource¢usagers_harmonized_source@b
+	usager_idu
+™éÓøô‘¼ÖÎÕğ‚®;
+€‡µÃ€òÖÊ
+€‡µÃ€±ï†
+€±ï†éÔÎÕ
+€Â¯ğôÔÎÕ
+€Â¯ğ«ÖÎÕböevent_timestamp‚]
+[{"name": "usagers_harmonized_source", "query": "SELECT * FROM feature_matrix", "table": ""}ŠZfeast.infra.offline_stores.contrib.postgres_offline_store.postgres_source.PostgreSQLSource¢usagers_harmonized_sourceªcar_accŠ(
+	
+car_acc
+™éÓ¸Û»F¢ÖÎÕˆùèê

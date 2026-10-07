@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["type", "risk_id", "requested_by", "reversible", "blast_radius"],
+  "properties": {
+    "type": { "type": "string" },
+    "risk_id": { "type": "string" },
+    "requested_by": { "type": "string" },
+    "reversible": { "type": "boolean" },
+    "blast_radius": { "type": "integer", "minimum": 0, "maximum": 5 },
+    "parameters": { "type": "object" }
+  }
+}

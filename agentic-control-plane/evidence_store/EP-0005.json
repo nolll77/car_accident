@@ -1,0 +1,65 @@
+{
+  "episode_id": "EP-0005",
+  "dedup_key": "47aec6981c7dab706f03805a93a4d35d1b20175bf6a37e519a0cde58fd0f8b4e",
+  "timestamp_utc": "2026-09-30T13:42:26.545862+00:00",
+  "state_machine_trace": [
+    "DETECTED",
+    "INVESTIGATING",
+    "DIAGNOSED",
+    "PLANNED",
+    "EXECUTING",
+    "RESOLVED"
+  ],
+  "risk": {
+    "id": "DATA-042"
+  },
+  "signal": {
+    "signal_id": "data_drift",
+    "value": 0.31,
+    "threshold": 0.2,
+    "source": "fake.other_provider",
+    "observed_at": "2026-09-30T13:42:26.545862+00:00",
+    "dimensions": [
+      "age",
+      "vehicle_type"
+    ]
+  },
+  "diagnosis": {
+    "risk_id": "DATA-042",
+    "agent": "data_specialist",
+    "confidence": 0.9,
+    "findings": [
+      {
+        "description": "Signal 'data_drift' = 0.31 > seuil 0.2 (source: fake.other_provider)",
+        "evidence_ref": "fake.other_provider"
+      }
+    ],
+    "ground_truth_risk_id": null
+  },
+  "action_proposal": {
+    "type": "create_issue",
+    "risk_id": "DATA-042",
+    "requested_by": "data_specialist",
+    "reversible": true,
+    "blast_radius": 2,
+    "parameters": {}
+  },
+  "policy_evaluation": {
+    "decision": "ALLOW",
+    "policy_version": "v1.0",
+    "matched_rule": "create_issue",
+    "reason_codes": [
+      "ACTION_ALLOWED"
+    ]
+  },
+  "human_approval": {
+    "required": false,
+    "approval_record": null
+  },
+  "execution": {
+    "status": "SUCCESS",
+    "executor": "local_simulated.create_issue",
+    "result_ref": "local://issues/1",
+    "details": "Issue simulée créée pour DATA-042"
+  }
+}

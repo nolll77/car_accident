@@ -1,0 +1,37 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Dépendances système minimales pour build certains paquets ML
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copier les requirements et installer
+# (Dans un vrai projet, on aurait un requirements.txt ou pyproject.toml)
+# Pour l'instant, on installe les librairies MLOps de base
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    mlflow \
+    pandas \
+    scikit-learn \
+    "feast[postgres,redis]==0.47.0" \
+    pydantic
+
+# Copier le code source de l'API
+COPY app/ ./app/
+COPY src/ ./src/
+# Copier le feature repo pour que l'API puisse s'y connecter
+COPY feature_repo/ ./feature_repo/
+
+# Configurer Feast pour l'environnement Docker
+RUN sed -i 's/localhost:6379/redis:6379/g' ./feature_repo/feature_repo/feature_store.yaml && \
+    sed -i 's/host: localhost/host: db/g' ./feature_repo/feature_repo/feature_store.yaml
+
+# Exposer le port de FastAPI
+EXPOSE 8000
+
+# Commande de démarrage avec Uvicorn
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

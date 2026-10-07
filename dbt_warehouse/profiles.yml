@@ -1,0 +1,12 @@
+baac_warehouse:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5432
+      user: mlops
+      password: mlops_password
+      dbname: mlops_db
+      schema: public
+      threads: 4

@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: int_accidents_joined
+    description: "Denormalized view joining usagers, vehicules, lieux, and caracteristiques at the usager grain."
+    columns:
+      - name: usager_id
+        tests:
+          - not_null
+          - unique

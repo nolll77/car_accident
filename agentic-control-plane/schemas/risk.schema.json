@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["id", "title", "domain", "severity", "detectability", "blast_radius", "allowed_actions"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" },
+    "title": { "type": "string" },
+    "domain": { "type": "string" },
+    "severity": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "detectability": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "blast_radius": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "allowed_actions": { "type": "array", "items": { "type": "string" } }
+  }
+}
