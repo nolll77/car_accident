@@ -1,4 +1,4 @@
-# BAAC MLOps — Mega README
+# BAAC MLOps — README
 
 > **Le point d'entree de reference du depot.** Ce README explique le projet
 > depuis son objectif metier jusqu'aux composants, aux donnees, aux commandes,
