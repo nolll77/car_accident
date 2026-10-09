@@ -28,8 +28,23 @@ def load_harmonized_to_postgres() -> None:
         try:
             logger.info(f"Loading {parquet_path} into table {table_name}")
             df = pd.read_parquet(parquet_path)
-            df.to_sql(table_name, engine, if_exists="replace", index=False)
-            logger.info(f"Loaded {len(df)} rows into {table_name}")
+            # [ALERTE MLOPS] Atomic Swap Pattern
+            staging_table = f"{table_name}_staging"
+            old_table = f"{table_name}_old"
+            
+            # 1. Écriture dans la table de staging (sans impacter la prod)
+            df.to_sql(staging_table, engine, if_exists="replace", index=False)
+            
+            # 2. Swap atomique sécurisé
+            from sqlalchemy import text
+            with engine.begin() as conn:
+                conn.execute(text(f"DROP TABLE IF EXISTS {old_table} CASCADE;"))
+                # Si la table principale existe, on la renomme en "_old"
+                conn.execute(text(f"ALTER TABLE IF EXISTS {table_name} RENAME TO {old_table};"))
+                # On promeut la table de staging
+                conn.execute(text(f"ALTER TABLE {staging_table} RENAME TO {table_name};"))
+                
+            logger.info(f"Swap atomique réussi : {len(df)} lignes promues dans {table_name}")
         except Exception as e:
             logger.error(f"Failed to load {table_name} from {parquet_path}: {e}")
 
