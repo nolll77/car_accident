@@ -217,13 +217,14 @@ class FeatureEngineer:
     # === USE CASE 2: Emergency Positioning ===
     def _build_positioning_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """creneau_2h: hour // 2 * 2 (e.g., 14->14, 15->14)
-        grav_max_accident: groupby('Num_Acc')['grav'].transform('max')
+        [ALERTE MLOPS] grav_max_accident supprimé pour éviter la fuite temporelle
         hrmn_valide: True if hrmn is not NaN and source_year not in [2021,2022]"""
         if "hour" in df.columns:
             df["creneau_2h"] = (df["hour"] // 2) * 2
 
-        if "num_acc" in df.columns and "grav" in df.columns:
-            df["grav_max_accident"] = df.groupby("num_acc")["grav"].transform("max")
+        # [ALERTE MLOPS] TARGET LEAKAGE: L'utilisation du max sur l'accident courant divulgue la cible !
+        # if "num_acc" in df.columns and "grav" in df.columns:
+        #     df["grav_max_accident"] = df.groupby("num_acc")["grav"].transform("max")
 
         if "hrmn" in df.columns and "an" in df.columns:
             df["hrmn_valide"] = (~df["hrmn"].isna()) & (~df["an"].isin([2021, 2022]))
@@ -232,16 +233,18 @@ class FeatureEngineer:
 
     # === USE CASE 3: Risk Zones ===
     def _build_zone_risk_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """nb_accidents_zone: groupby('dep')['Num_Acc'].transform('nunique')
-        taux_gravite_zone: groupby('dep')['grav'].transform(lambda x: (x.isin([2,3])).mean())
+        """[ALERTE MLOPS] nb_accidents_zone et taux_gravite_zone supprimés (Target Leakage global)
         granularite_fiable: True if lat and long are not NaN"""
-        if "dep" in df.columns and "num_acc" in df.columns:
-            df["nb_accidents_zone"] = df.groupby("dep")["num_acc"].transform("nunique")
 
-        if "dep" in df.columns and "grav" in df.columns:
-            df["taux_gravite_zone"] = df.groupby("dep")["grav"].transform(
-                lambda x: x.isin([2, 3]).mean()
-            )
+        # [ALERTE MLOPS] TARGET LEAKAGE: Ces features globales incluaient le futur et la cible courante.
+        # Elles doivent être calculées via un TargetEncoder (out-of-fold) dans Scikit-learn !
+        # if "dep" in df.columns and "num_acc" in df.columns:
+        #     df["nb_accidents_zone"] = df.groupby("dep")["num_acc"].transform("nunique")
+        #
+        # if "dep" in df.columns and "grav" in df.columns:
+        #     df["taux_gravite_zone"] = df.groupby("dep")["grav"].transform(
+        #         lambda x: x.isin([2, 3]).mean()
+        #     )
 
         if "lat" in df.columns and "long" in df.columns:
             df["granularite_fiable"] = (~df["lat"].isna()) & (~df["long"].isna())
@@ -250,12 +253,14 @@ class FeatureEngineer:
 
     # === USE CASE 4: Infrastructure Aid ===
     def _build_infra_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """risque_relatif_catr: groupby('catr')['grav'].transform(lambda x: (x.isin([2,3])).mean())
+        """[ALERTE MLOPS] risque_relatif_catr supprimé (Target Leakage)
         vma_disponible: True if vma is not NaN"""
-        if "catr" in df.columns and "grav" in df.columns:
-            df["risque_relatif_catr"] = df.groupby("catr")["grav"].transform(
-                lambda x: x.isin([2, 3]).mean()
-            )
+
+        # [ALERTE MLOPS] TARGET LEAKAGE
+        # if "catr" in df.columns and "grav" in df.columns:
+        #     df["risque_relatif_catr"] = df.groupby("catr")["grav"].transform(
+        #         lambda x: x.isin([2, 3]).mean()
+        #     )
 
         if "vma" in df.columns:
             df["vma_disponible"] = ~df["vma"].isna()

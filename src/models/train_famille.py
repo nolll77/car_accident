@@ -198,14 +198,30 @@ class ModelFactory:
         ]
         target = self.config["target"]
 
-        df_clean = df_train[available_features + [target]].dropna()
+        # [ALERTE MLOPS] On intègre 'event_timestamp' pour permettre le découpage temporel
+        cols_to_keep = available_features + [target]
+        if "event_timestamp" in df_train.columns:
+            cols_to_keep.append("event_timestamp")
 
-        X = df_clean[available_features]
-        y = df_clean[target].astype(int)
+        df_clean = df_train[cols_to_keep].dropna()
 
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
-        )
+        if "event_timestamp" in df_clean.columns:
+            # [ALERTE MLOPS] Remplacement du split aléatoire par un Split Temporel
+            split_date = pd.to_datetime("2023-01-01", utc=True)
+            train_mask = df_clean["event_timestamp"] < split_date
+            test_mask = df_clean["event_timestamp"] >= split_date
+
+            X_train = df_clean[train_mask][available_features]
+            y_train = df_clean[train_mask][target].astype(int)
+            X_test = df_clean[test_mask][available_features]
+            y_test = df_clean[test_mask][target].astype(int)
+            logger.info(f"Split Temporel: Train={len(X_train)}, Test={len(X_test)}")
+        else:
+            X = df_clean[available_features]
+            y = df_clean[target].astype(int)
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42, stratify=y
+            )
 
         cat_cols = X_train.select_dtypes(
             include=["object", "category", "bool"]

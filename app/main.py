@@ -3,12 +3,14 @@ Serving API BAAC - MLOps Phase 4
 FastAPI exposant le modèle (via MLflow) et consommant le Feature Store en temps réel (Feast Redis).
 """
 
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import pandas as pd
 import logging
 import os
+
+import pandas as pd
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from feast import FeatureStore
+from pydantic import BaseModel
+
 # from prometheus_fastapi_instrumentator import Instrumentator # Pour le monitoring SRE
 
 logging.basicConfig(level=logging.INFO)
@@ -44,6 +46,39 @@ class PredictionRequest(BaseModel):
     usager_id: str
 
 
+def write_shadow_log_async(X_dict, usager_id, predicted_class, db_url):
+    import logging
+    import os
+
+    import pandas as pd
+    from sqlalchemy import create_engine
+
+    logger = logging.getLogger("api")
+    try:
+        engine = create_engine(db_url)
+        # Reconstruct single row dataframe
+        log_entry = pd.DataFrame([X_dict])
+        log_entry["usager_id"] = usager_id
+        log_entry["predicted_gravity"] = predicted_class
+        log_entry["event_timestamp"] = pd.to_datetime("now")
+
+        # Écriture native dans PostgreSQL
+        log_entry.to_sql(
+            "production_shadow_log", engine, if_exists="append", index=False
+        )
+        logger.info(f"✅ Shadow log asynchrone enregistré pour {usager_id}")
+
+    except Exception as db_e:
+        logger.error(f"❌ Échec de l'écriture asynchrone du shadow log : {db_e}")
+        # Fallback
+        log_dir = "data/production_logs"
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, "shadow_log_fallback.csv")
+        log_entry.to_csv(
+            log_file, mode="a", header=not os.path.exists(log_file), index=False
+        )
+
+
 @app.on_event("startup")
 async def startup_event():
     logger.info("Démarrage de l'API avec Inférence temps réel.")
@@ -55,7 +90,7 @@ def read_root():
 
 
 @app.get("/predict/{famille}/{usager_id}")
-def predict_gravity(famille: str, usager_id: str):
+def predict_gravity(famille: str, usager_id: str, background_tasks: BackgroundTasks):
     """
     Prédiction de gravité pour un usager donné via Redis et MLflow.
     """
@@ -125,7 +160,7 @@ def predict_gravity(famille: str, usager_id: str):
     except Exception as e:
         logger.error(f"Echec Feast : {e}")
         raise HTTPException(
-            status_code=500, detail=f"Erreur d'accès au Feature Store: {str(e)}"
+            status_code=500, detail=f"Erreur d'accès au Feature Store: {e!s}"
         )
 
     # -----------------------------------------------------
@@ -177,40 +212,18 @@ def predict_gravity(famille: str, usager_id: str):
         prediction = response.json().get("predictions", [0])
         predicted_class = int(prediction[0])
 
-        # Shadow Logging MLOps - PostgresSQL (Thread-safe, direct BI access)
-        from sqlalchemy import create_engine
-
+        # [ALERTE MLOPS] Shadow Logging Asynchrone : Découplé du chemin critique !
         DB_URL = "postgresql://mlops:mlops_password@db:5432/mlops_db"
-
-        # On utilise une variable d'environnement pour gérer l'exécution hors-docker (tests)
         if os.environ.get("ENV") == "test" or not os.environ.get("FEAST_REDIS_HOST"):
             DB_URL = "postgresql://mlops:mlops_password@localhost:5432/mlops_db"
 
-        try:
-            engine = create_engine(DB_URL)
-
-            log_entry = X.copy()
-            log_entry["usager_id"] = usager_id
-            log_entry["predicted_gravity"] = predicted_class
-            log_entry["event_timestamp"] = pd.to_datetime("now")
-
-            # Écriture native dans PostgreSQL
-            log_entry.to_sql(
-                "production_shadow_log", engine, if_exists="append", index=False
-            )
-            logger.info(f"✅ Shadow log enregistré dans PostgreSQL pour {usager_id}")
-
-        except Exception as db_e:
-            logger.error(
-                f"❌ Échec de l'écriture du shadow log dans PostgreSQL : {db_e}"
-            )
-            # Fallback en cas de panne de base de données (pour ne pas bloquer l'inférence)
-            log_dir = "data/production_logs"
-            os.makedirs(log_dir, exist_ok=True)
-            log_file = os.path.join(log_dir, "shadow_log_fallback.csv")
-            log_entry.to_csv(
-                log_file, mode="a", header=not os.path.exists(log_file), index=False
-            )
+        background_tasks.add_task(
+            write_shadow_log_async,
+            X.iloc[0].to_dict(),
+            usager_id,
+            predicted_class,
+            DB_URL,
+        )
 
         return {
             "usager_id": usager_id,
@@ -222,7 +235,7 @@ def predict_gravity(famille: str, usager_id: str):
     except Exception as e:
         logger.error(f"Echec Inférence : {e}")
         raise HTTPException(
-            status_code=500, detail=f"Erreur lors de l'inférence: {str(e)}"
+            status_code=500, detail=f"Erreur lors de l'inférence: {e!s}"
         )
 
 

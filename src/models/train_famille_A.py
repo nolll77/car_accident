@@ -45,9 +45,19 @@ class ModelTrainerFamilleA:
         X = pd.get_dummies(df_train[features], drop_first=True)
         y = df_train[target]
 
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42
-        )
+        # [ALERTE MLOPS] Split Temporel strict sur l'année
+        if "an" in df_train.columns:
+            train_mask = df_train["an"] < 2023
+            test_mask = df_train["an"] >= 2023
+            X_train, X_test = X[train_mask], X[test_mask]
+            y_train, y_test = y[train_mask], y[test_mask]
+            logger.info(
+                f"Split Temporel Famille A: Train={len(X_train)} (avant 2023), Test={len(X_test)} (2023+)"
+            )
+        else:
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42
+            )
 
         logger.info("Démarrage du run MLflow...")
         with mlflow.start_run(
