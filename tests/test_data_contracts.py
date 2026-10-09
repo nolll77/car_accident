@@ -1,77 +1,50 @@
-"""
-Tests automatisés des contrats de données Pandera (MLOps CI/CD).
-Vérifie que la corruption de la donnée est bien bloquée.
-"""
-
 import pytest
 import pandas as pd
 import pandera as pa
-import sys
-import os
+from src.data.contracts import raw_caracteristiques_schema
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from src.data.contracts import BAACUsagerSchema
+def test_raw_schema_is_permissive():
+    """Vérifie que le contrat Raw accepte les colonnes inattendues (strict=False)"""
+    assert not raw_caracteristiques_schema.strict
+    
+    df = pd.DataFrame({
+        "num_acc": [202300000001],
+        "jour": [1],
+        "mois": [1],
+        "an": [2023],
+        "lum": [1],
+        "dep": ["75"],
+        "com": ["75056"],
+        "agg": [2],
+        "int": [1],
+        "atm": [1],
+        "col": [1],
+        "lat": [48.8],
+        "long": [2.3],
+        "colonne_surprise": ["test"] # Doit passer car strict=False
+    })
+    
+    # Validation
+    validated_df = raw_caracteristiques_schema.validate(df)
+    assert "colonne_surprise" in validated_df.columns
 
-
-def test_valid_usager_data():
-    """Test qu'un dataframe valide passe le contrat."""
-    df = pd.DataFrame(
-        {
-            "usager_id": ["123_456"],
-            "Num_Acc": [123456789],
-            "id_vehicule": ["A01"],
-            "num_veh": ["1"],
-            "place": [1],
-            "catu": [1],
-            "grav": [3],
-            "sexe": [1],
-            "an_nais": [1985],
-            "trajet": [1],
-        }
-    )
-
-    # Doit passer sans exception
-    validated_df = BAACUsagerSchema.validate(df)
-    assert not validated_df.empty
-
-
-def test_invalid_usager_data_age():
-    """Test qu'un âge aberrant (hors bornes) échoue."""
-    df = pd.DataFrame(
-        {
-            "usager_id": ["123_456"],
-            "Num_Acc": [123456789],
-            "id_vehicule": ["A01"],
-            "num_veh": ["1"],
-            "place": [1],
-            "catu": [1],
-            "grav": [3],
-            "sexe": [1],
-            "an_nais": [1850],  # Erreur ici (Trop vieux)
-            "trajet": [1],
-        }
-    )
-
+def test_raw_schema_types():
+    """Vérifie que le contrat enforce les types requis"""
+    df = pd.DataFrame({
+        "num_acc": ["not_an_int"], # Erreur de type
+        "jour": [1],
+        "mois": [1],
+        "an": [2023],
+        "lum": [1],
+        "dep": ["75"],
+        "com": ["75056"],
+        "agg": [2],
+        "int": [1],
+        "atm": [1],
+        "col": [1],
+        "lat": [48.8],
+        "long": [2.3]
+    })
+    
     with pytest.raises(pa.errors.SchemaError):
-        BAACUsagerSchema.validate(df)
-
-
-def test_invalid_usager_data_grav():
-    """Test qu'une gravité non répertoriée échoue (ex: 5)."""
-    df = pd.DataFrame(
-        {
-            "usager_id": ["123_456"],
-            "Num_Acc": [123456789],
-            "id_vehicule": ["A01"],
-            "num_veh": ["1"],
-            "place": [1],
-            "catu": [1],
-            "grav": [5],  # Erreur ici (Seulement -1, 1, 2, 3, 4 autorisés)
-            "sexe": [1],
-            "an_nais": [1985],
-            "trajet": [1],
-        }
-    )
-
-    with pytest.raises(pa.errors.SchemaError):
-        BAACUsagerSchema.validate(df)
+        raw_caracteristiques_schema.validate(df)

@@ -1,61 +1,41 @@
-"""
-Tests d'intégration de l'API de Serving (MLOps CI/CD).
-"""
-
-import os
-import sys
-from unittest.mock import patch
-
 from fastapi.testclient import TestClient
+from unittest.mock import patch, MagicMock
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from app.main import app  # noqa: E402
+# Import de l'app (on mocke MLflow et Feast au niveau de l'app pour éviter de les contacter)
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from app.main import app, write_shadow_log_async
 
 client = TestClient(app)
 
-
-def test_api_health_docs():
-    """Test que l'API est debout et expose la doc."""
-    response = client.get("/docs")
+@patch("app.main.mlflow.pyfunc.load_model")
+@patch("app.main.redis.Redis")
+@patch("app.main.BackgroundTasks.add_task")
+def test_predict_endpoint_decoupling(mock_add_task, mock_redis, mock_load_model):
+    # Setup des mocks
+    mock_model = MagicMock()
+    mock_model.predict.return_value = [1]
+    mock_load_model.return_value = mock_model
+    
+    mock_r = MagicMock()
+    mock_r.hgetall.return_value = {
+        b"catu": b"1", b"sexe": b"1", b"an_nais": b"1980", b"trajet": b"5",
+        b"is_metropole": b"1", b"age_bucket": b"3", b"is_motorise": b"1",
+        b"lum_calculee": b"1", b"atm_simplifie": b"1", b"catr_derive": b"3",
+        b"nb_accidents_zone": b"10"
+    }
+    mock_redis.return_value = mock_r
+    
+    # Appel de l'API
+    response = client.get("/predict/A/12345")
+    
     assert response.status_code == 200
-
-
-def test_predict_endpoint_mocked():
-    """
-    Test du endpoint de prédiction avec mock du Feature Store (Redis)
-    et du MLflow Serve pour simuler le comportement en CI.
-    """
-    # 1. Mock de la réponse de l'API MLflow Serve
-    with patch("requests.post") as mock_post:
-        mock_post.return_value.status_code = 200
-        mock_post.return_value.json.return_value = {"predictions": [1]}
-
-        # 2. Mock du Feature Store
-        with patch("app.main.FEATURE_STORE") as mock_fs:
-            mock_fs.get_online_features.return_value.to_dict.return_value = {
-                "usagers_features:place": [1],
-                "usagers_features:catu": [1],
-                "usagers_features:sexe": [1],
-                "usagers_features:an_nais": [1980],
-                "usagers_features:trajet": [1],
-                "usagers_features:is_metropole": [True],
-                "usagers_features:age_bucket": ["36-50"],
-                "usagers_features:is_motorise": [True],
-                "usagers_features:lum_calculee": ["Jour"],
-                "usagers_features:atm_simplifie": ["Normal"],
-                "usagers_features:catr_derive": ["Departementale"],
-                "usagers_features:nb_accidents_zone": [150],
-                "usagers_features:taux_gravite_zone": [0.15],
-                "usagers_features:risque_relatif_catr": [0.12],
-            }
-
-            # 3. Empêcher l'écriture Postgres pendant le test
-            with patch("pandas.DataFrame.to_sql") as _mock_to_sql:
-                response = client.get("/predict/A/test_123_456")
-
-                assert response.status_code == 200
-                data = response.json()
-                assert data["status"] == "success"
-                assert data["usager_id"] == "test_123_456"
-                assert data["predicted_gravity"] == 1
-                assert data["source"] == "Redis Online Store"
+    assert response.json()["usager_id"] == "12345"
+    
+    # Vérifie que le shadow logging a bien été déporté en BackgroundTask
+    mock_add_task.assert_called_once()
+    args, kwargs = mock_add_task.call_args
+    assert args[0] == write_shadow_log_async
+    
