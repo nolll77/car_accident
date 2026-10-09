@@ -4,21 +4,21 @@ Ce document trace l'audit *ligne par ligne* des fichiers du projet pour purger l
 
 | Fichier | Domaine | Checklist P1/P2 | Statut |
 | :--- | :--- | :--- | :--- |
-| `agentic-ops-core/agentic_ops/adapters/protocol.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/cli/compile_taxonomy.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/core/evidence.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/core/executor.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/core/infra_specialist.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/core/model_specialist.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/core/orchestrator.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/core/remediation_agent.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/core/specialist.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/tools/base.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/tools/data.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/tools/github.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/tools/infra.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/tools/model.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
-| `agentic-ops-core/agentic_ops/tools/observability.py` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ⏳ À faire |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
+| `agentic-ops-core/...` | agentic-ops-core | Least privilege, Tool boundaries, Exception swallowing | ✅ **Traité** (Least Privilege Sandboxing en place, Retry LLM Tenacity ajoutés) |
 | `app/api/datasets.py` | app | Timeouts, Rate-limiting, Async/Await blocking | 🗑️ **Supprimé** (Dead code) |
 | `app/api/executions.py` | app | Timeouts, Rate-limiting, Async/Await blocking | 🗑️ **Supprimé** (Dead code) |
 | `app/api/inference.py` | app | Timeouts, Rate-limiting, Async/Await blocking | 🗑️ **Supprimé** (Dead code) |
