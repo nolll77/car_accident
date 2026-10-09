@@ -1,6 +1,14 @@
 import logging
 import os
+import random
 from datetime import datetime
+import numpy as np
+
+# [ALERTE MLOPS] P1: Fixation totale des seeds
+SEED = 42
+np.random.seed(SEED)
+random.seed(SEED)
+os.environ['PYTHONHASHSEED'] = str(SEED)
 
 import mlflow
 import mlflow.pyfunc
@@ -221,9 +229,20 @@ class ModelFactory:
         else:
             X = df_clean[available_features]
             y = df_clean[target].astype(int)
-            X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.2, random_state=42, stratify=y
-            )
+            # [ALERTE MLOPS] P0: Remplacement du split aléatoire par une Validation Temporelle !
+            # Si 'an' est présent, on utilise les années passées pour l'entraînement et 2023+ pour le test
+            if "an" in df_clean.columns:
+                train_mask = df_clean["an"] < 2023
+                test_mask = df_clean["an"] >= 2023
+                X_train, X_test = X[train_mask], X[test_mask]
+                y_train, y_test = y[train_mask], y[test_mask]
+                logger.info(f"Split Temporel: Train={len(X_train)} (avant 2023), Test={len(X_test)} (2023+)")
+            else:
+                # Fallback sécurisé en cas d'absence temporelle
+                # Attention, ce chemin ne devrait plus être emprunté en prod !
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X, y, test_size=0.2, random_state=42, stratify=y
+                )
 
         cat_cols = X_train.select_dtypes(
             include=["object", "category", "bool"]

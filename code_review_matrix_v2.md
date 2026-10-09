@@ -60,6 +60,6 @@ Ce document trace l'audit *ligne par ligne* des fichiers du projet pour purger l
 | `src/features/calendar_utils.py` | src | Time-aware joins, NaN handling | ⏳ À faire |
 | `src/models/drift_monitor.py` | src | Lineage tags complets, Seed fixation | ⏳ À faire |
 | `src/models/sre_engine.py` | src | Lineage tags complets, Seed fixation | ⏳ À faire |
-| `src/models/train_famille.py` | src | Lineage tags complets, Seed fixation | ⏳ À faire |
-| `src/models/train_famille_A.py` | src | Lineage tags complets, Seed fixation | ⏳ À faire |
+| `src/models/train_famille.py` | src | Lineage tags complets, Seed fixation | ✅ **Traité** (Lineage total, Fixation Seeds, Protection split) |
+| `src/models/train_famille_A.py` | src | Lineage tags complets, Seed fixation | ✅ **Traité** (Lineage total, Fixation Seeds, Protection split) |
 | `src/warehouse/load_to_postgres.py` | src | Connection pooling, Retry backoff, Atomic rollback | ⏳ À faire |

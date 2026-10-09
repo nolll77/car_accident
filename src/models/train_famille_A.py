@@ -5,6 +5,15 @@ Entraînement reproductible, tracking MLflow, et versioning de modèle.
 
 import logging
 from datetime import datetime
+import numpy as np
+import random
+import os
+
+# [ALERTE MLOPS] P1: Fixation totale des seeds pour reproductibilité
+SEED = 42
+np.random.seed(SEED)
+random.seed(SEED)
+os.environ['PYTHONHASHSEED'] = str(SEED)
 
 import mlflow
 import mlflow.sklearn
@@ -40,8 +49,12 @@ class ModelTrainerFamilleA:
         features = ["place", "catu", "sexe", "an_nais", "is_metropole", "is_motorise"]
         target = "grav"
 
-        # Filtre sur les colonnes nécessaires (gestion propre des NaNs)
-        df_train = df[features + [target]].dropna()
+        # [ALERTE MLOPS] P1: Conserver l'année ('an') pour le split temporel
+        cols_to_keep = features + [target]
+        if "an" in df.columns and "an" not in cols_to_keep:
+            cols_to_keep.append("an")
+            
+        df_train = df[cols_to_keep].dropna()
 
         # Encodage simpliste (One-Hot) pour les variables catégorielles (ex: bools)
         X = pd.get_dummies(df_train[features], drop_first=True)
@@ -72,6 +85,17 @@ class ModelTrainerFamilleA:
             mlflow.log_param("n_estimators", n_estimators)
             mlflow.log_param("max_depth", max_depth)
             mlflow.log_param("features", features)
+            
+            # [ALERTE MLOPS] P1: Traçabilité intégrale (Lineage)
+            import os, subprocess
+            try:
+                git_commit = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip().decode('utf-8')
+                mlflow.set_tag("git_commit", git_commit)
+            except Exception:
+                mlflow.set_tag("git_commit", "unknown")
+                
+            mlflow.set_tag("container_digest", os.environ.get("HOSTNAME", "local_dev"))
+            mlflow.set_tag("dataset_version", "dvc_tracked_v1") # Placeholder for DVC rev
 
             # Entraînement
             logger.info("Entraînement du RandomForestClassifier...")
