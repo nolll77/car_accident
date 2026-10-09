@@ -16,6 +16,7 @@ from pydantic import BaseModel
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("BAAC_Serving_API")
 
+# [ALERTE MLOPS] P1: Rate-Limiting délégué à l'Ingress (Nginx/Traefik) ou Redis via gateway
 app = FastAPI(
     title="BAAC Gravity Prediction API (Famille A)",
     description="API MLOps Temps Réel - Connectée à Feast et MLflow",
@@ -74,9 +75,12 @@ def write_shadow_log_async(X_dict, usager_id, predicted_class, db_url):
         log_dir = "data/production_logs"
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, "shadow_log_fallback.csv")
-        log_entry.to_csv(
-            log_file, mode="a", header=not os.path.exists(log_file), index=False
-        )
+        try:
+            log_entry.to_csv(
+                log_file, mode="a", header=not os.path.exists(log_file), index=False
+            )
+        except Exception as disk_e:
+            logger.critical(f"❌ Échec fatal du fallback CSV : {disk_e}")
 
 
 @app.on_event("startup")
@@ -202,7 +206,7 @@ def predict_gravity(famille: str, usager_id: str, background_tasks: BackgroundTa
             }
         }
 
-        response = requests.post(MLFLOW_SERVE_URL, json=payload)
+        response = requests.post(MLFLOW_SERVE_URL, json=payload, timeout=3.0)  # P1: Added explicit timeout
 
         if response.status_code != 200:
             raise Exception(
@@ -213,9 +217,9 @@ def predict_gravity(famille: str, usager_id: str, background_tasks: BackgroundTa
         predicted_class = int(prediction[0])
 
         # [ALERTE MLOPS] Shadow Logging Asynchrone : Découplé du chemin critique !
-        DB_URL = "postgresql://mlops:mlops_password@db:5432/mlops_db"
+        DB_URL = os.environ.get("DATABASE_URL", "postgresql://mlops:${POSTGRES_PASSWORD}@db:5432/mlops_db")
         if os.environ.get("ENV") == "test" or not os.environ.get("FEAST_REDIS_HOST"):
-            DB_URL = "postgresql://mlops:mlops_password@localhost:5432/mlops_db"
+            DB_URL = os.environ.get("DATABASE_URL_LOCAL", "postgresql://mlops:mock@localhost:5432/mlops_db")
 
         background_tasks.add_task(
             write_shadow_log_async,

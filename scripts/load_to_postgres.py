@@ -7,7 +7,12 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    engine = create_engine("postgresql://mlops:mlops_password@localhost:5432/mlops_db")
+    import os
+
+    db_url = os.environ.get(
+        "DATABASE_URL_LOCAL", "postgresql://mlops:mock@localhost:5432/mlops_db"
+    )
+    engine = create_engine(db_url)
 
     tables = {
         "caracteristiques": "raw_caracteristiques",
@@ -26,14 +31,21 @@ def main():
 
         # Écriture dans le staging
         df.to_sql(staging_table, engine, if_exists="replace", index=False)
-        
+
         # Atomic Swap
+        # [ALERTE MLOPS] P1: Suppression du DROP TABLE CASCADE dangereux
         with engine.begin() as conn:
             from sqlalchemy import text
-            conn.execute(text(f"DROP TABLE IF EXISTS {old_table} CASCADE"))
-            conn.execute(text(f"ALTER TABLE IF EXISTS {pg_table} RENAME TO {old_table}"))
+
+            # 1. On supprime l'ancienne table de backup (sans cascade)
+            conn.execute(text(f"DROP TABLE IF EXISTS {old_table}"))
+            # 2. On renomme la prod actuelle vers le backup
+            conn.execute(
+                text(f"ALTER TABLE IF EXISTS {pg_table} RENAME TO {old_table}")
+            )
+            # 3. On promeut le staging en prod
             conn.execute(text(f"ALTER TABLE {staging_table} RENAME TO {pg_table}"))
-            
+
         logger.info(f"Swap atomique réussi pour {pg_table}: {len(df)} lignes promues.")
 
 

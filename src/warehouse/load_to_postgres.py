@@ -31,20 +31,27 @@ def load_harmonized_to_postgres() -> None:
             # [ALERTE MLOPS] Atomic Swap Pattern
             staging_table = f"{table_name}_staging"
             old_table = f"{table_name}_old"
-            
+
             # 1. Écriture dans la table de staging (sans impacter la prod)
             df.to_sql(staging_table, engine, if_exists="replace", index=False)
-            
+
             # 2. Swap atomique sécurisé
             from sqlalchemy import text
+
             with engine.begin() as conn:
-                conn.execute(text(f"DROP TABLE IF EXISTS {old_table} CASCADE;"))
+                conn.execute(text(f"DROP TABLE IF EXISTS {old_table};"))
                 # Si la table principale existe, on la renomme en "_old"
-                conn.execute(text(f"ALTER TABLE IF EXISTS {table_name} RENAME TO {old_table};"))
+                conn.execute(
+                    text(f"ALTER TABLE IF EXISTS {table_name} RENAME TO {old_table};")
+                )
                 # On promeut la table de staging
-                conn.execute(text(f"ALTER TABLE {staging_table} RENAME TO {table_name};"))
-                
-            logger.info(f"Swap atomique réussi : {len(df)} lignes promues dans {table_name}")
+                conn.execute(
+                    text(f"ALTER TABLE {staging_table} RENAME TO {table_name};")
+                )
+
+            logger.info(
+                f"Swap atomique réussi : {len(df)} lignes promues dans {table_name}"
+            )
         except Exception as e:
             logger.error(f"Failed to load {table_name} from {parquet_path}: {e}")
 

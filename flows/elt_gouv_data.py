@@ -98,7 +98,7 @@ def load_to_postgres_chunked(tables: list):
         with engine.begin() as conn:
             from sqlalchemy import text
 
-            conn.execute(text(f"DROP TABLE IF EXISTS {pg_table} CASCADE"))
+            conn.execute(text(f"DROP TABLE IF EXISTS {pg_table}"))
 
         parquet_file = pq.ParquetFile(parquet_path)
         total_rows = 0

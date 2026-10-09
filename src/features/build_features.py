@@ -189,6 +189,7 @@ class FeatureEngineer:
 
     # === USE CASE 1: Temporal Anticipation ===
     def _build_temporal_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = self._add_feast_timestamp(df)
         """Create date from an, mois, jour. Then:
         jour_semaine (0=Monday..6=Sunday)
         is_weekend (jour_semaine >= 5)
@@ -236,15 +237,35 @@ class FeatureEngineer:
         """[ALERTE MLOPS] nb_accidents_zone et taux_gravite_zone supprimés (Target Leakage global)
         granularite_fiable: True if lat and long are not NaN"""
 
-        # [ALERTE MLOPS] TARGET LEAKAGE: Ces features globales incluaient le futur et la cible courante.
-        # Elles doivent être calculées via un TargetEncoder (out-of-fold) dans Scikit-learn !
-        # if "dep" in df.columns and "num_acc" in df.columns:
-        #     df["nb_accidents_zone"] = df.groupby("dep")["num_acc"].transform("nunique")
-        #
-        # if "dep" in df.columns and "grav" in df.columns:
-        #     df["taux_gravite_zone"] = df.groupby("dep")["grav"].transform(
-        #         lambda x: x.isin([2, 3]).mean()
-        #     )
+        # [ALERTE MLOPS] P1: Correction de la Fuite Temporelle via Fenêtres Glissantes (Time-Aware Joins)
+        if (
+            "dep" in df.columns
+            and "event_timestamp" in df.columns
+            and "grav" in df.columns
+        ):
+            # 1. Trier chronologiquement
+            df = df.sort_values("event_timestamp")
+
+            # 2. Calculer le taux de gravité historique *jusqu'à l'accident précédent* (shift 1)
+            # On utilise expanding pour avoir tout l'historique passé de la zone
+            df["is_grave"] = df["grav"].isin([2, 3]).astype(float)
+
+            # Taux historique
+            df["taux_gravite_zone"] = df.groupby("dep")["is_grave"].transform(
+                lambda x: x.expanding().mean().shift(1)
+            )
+
+            # Volume historique
+            df["nb_accidents_zone"] = df.groupby("dep")["is_grave"].transform(
+                lambda x: x.expanding().count().shift(1)
+            )
+
+            # Nettoyage et imputation pour les premiers accidents d'une zone
+            df["taux_gravite_zone"] = df["taux_gravite_zone"].fillna(
+                df["taux_gravite_zone"].mean()
+            )
+            df["nb_accidents_zone"] = df["nb_accidents_zone"].fillna(0)
+            df = df.drop(columns=["is_grave"])
 
         if "lat" in df.columns and "long" in df.columns:
             df["granularite_fiable"] = (~df["lat"].isna()) & (~df["long"].isna())
@@ -264,6 +285,7 @@ class FeatureEngineer:
 
         if "vma" in df.columns:
             df["vma_disponible"] = ~df["vma"].isna()
+            df["vma"] = df["vma"].fillna(50.0)  # P2: Default Imputation for ML
 
         return df
 
