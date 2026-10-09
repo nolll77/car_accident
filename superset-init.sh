@@ -12,7 +12,7 @@ superset fab create-admin \
     --firstname Admin \
     --lastname Superset \
     --email admin@superset.com \
-    --password admin || echo "Admin already exists"
+    --password $SUPERSET_ADMIN_PASSWORD || echo "Admin already exists"
 
 # Initialiser les rôles et permissions
 superset init
