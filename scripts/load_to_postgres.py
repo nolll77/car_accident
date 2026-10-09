@@ -21,16 +21,20 @@ def main():
         df = pd.read_parquet(f"data/harmonized/{parquet_name}.parquet")
         df.columns = [c.lower() for c in df.columns]
 
-        # Drop table cascade so dbt views don't block
-        with engine.connect() as conn:
+        staging_table = f"{pg_table}_staging"
+        old_table = f"{pg_table}_old"
+
+        # Écriture dans le staging
+        df.to_sql(staging_table, engine, if_exists="replace", index=False)
+        
+        # Atomic Swap
+        with engine.begin() as conn:
             from sqlalchemy import text
-
-            conn.execute(text(f"DROP TABLE IF EXISTS {pg_table} CASCADE"))
-            conn.commit()
-
-        # Write to postgres, replace if exists
-        df.to_sql(pg_table, engine, if_exists="replace", index=False)
-        logger.info(f"Loaded {len(df)} rows into {pg_table}")
+            conn.execute(text(f"DROP TABLE IF EXISTS {old_table} CASCADE"))
+            conn.execute(text(f"ALTER TABLE IF EXISTS {pg_table} RENAME TO {old_table}"))
+            conn.execute(text(f"ALTER TABLE {staging_table} RENAME TO {pg_table}"))
+            
+        logger.info(f"Swap atomique réussi pour {pg_table}: {len(df)} lignes promues.")
 
 
 if __name__ == "__main__":
