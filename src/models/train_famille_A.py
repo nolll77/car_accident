@@ -3,14 +3,16 @@ Training ML Pipeline BAAC (Famille A) - MLOps Phase 3
 Entraînement reproductible, tracking MLflow, et versioning de modèle.
 """
 
-import pandas as pd
 import logging
+from datetime import datetime
+
 import mlflow
 import mlflow.sklearn
-from sklearn.model_selection import train_test_split
+import pandas as pd
+from mlflow.tracking import MlflowClient
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import f1_score, accuracy_score
-from datetime import datetime
+from sklearn.metrics import accuracy_score, f1_score
+from sklearn.model_selection import train_test_split
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("BAACTrainingFamilleA")
@@ -92,11 +94,31 @@ class ModelTrainerFamilleA:
             mlflow.log_metric("accuracy", acc)
 
             # Log du modèle
-            mlflow.sklearn.log_model(
+            # [ALERTE MLOPS] Model Evaluation Gate : Champion vs Challenger
+            model_info = mlflow.sklearn.log_model(
                 sk_model=model,
                 artifact_path="model",
-                registered_model_name="BAAC_Braking_Controller_Famille_A",
             )
+            
+            reg_model_name = "BAAC_Braking_Controller_Famille_A"
+            new_version = mlflow.register_model(model_info.model_uri, reg_model_name)
+            
+            client = MlflowClient()
+            try:
+                champion_version = client.get_model_version_by_alias(reg_model_name, "Champion")
+                champion_run = client.get_run(champion_version.run_id)
+                champion_score = champion_run.data.metrics.get("f1_score", 0.0)
+            except Exception:
+                champion_score = -1.0
+                
+            challenger_score = f1
+            
+            if challenger_score > champion_score:
+                logger.info(f"🏆 Promotion: Challenger (F1={challenger_score:.4f}) bat le Champion ({champion_score:.4f})")
+                client.set_registered_model_alias(reg_model_name, "Champion", new_version.version)
+            else:
+                logger.warning(f"❌ Rejet: Challenger (F1={challenger_score:.4f}) rejeté face au Champion ({champion_score:.4f})")
+                client.set_registered_model_alias(reg_model_name, "Challenger_Rejected", new_version.version)
 
             logger.info(
                 f"Run MLflow terminé. Modèle versionné avec succès (Run ID: {run.info.run_id})."

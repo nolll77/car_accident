@@ -82,7 +82,7 @@ services:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
     command: >
       /bin/sh -c "pip install mlflow==3.15.1 psycopg2-binary boto3 scikit-learn pandas numpy &&
-      mlflow models serve -m 'models:/BAAC_Model_Famille_A/latest' --env-manager local --host 0.0.0.0 --port 5002"
+      mlflow models serve -m 'models:/BAAC_Model_Famille_A@Champion' --env-manager local --host 0.0.0.0 --port 5002"
     ports:
       - "5002:5002"
 

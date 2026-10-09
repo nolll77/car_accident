@@ -1,29 +1,31 @@
-import pandas as pd
-import numpy as np
-import mlflow
-import mlflow.sklearn
-import mlflow.pyfunc
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.metrics import (
-    f1_score,
-    accuracy_score,
-    recall_score,
-    precision_score,
-    roc_auc_score,
-    mean_absolute_error,
-    mean_squared_error,
-    mean_absolute_percentage_error,
-)
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OrdinalEncoder
-from sklearn.pipeline import Pipeline
 import logging
-from datetime import datetime
 import os
-from feast import FeatureStore
+from datetime import datetime
+
+import mlflow
+import mlflow.pyfunc
+import mlflow.sklearn
+import numpy as np
+import pandas as pd
 import psycopg2
 import requests
+from feast import FeatureStore
+from mlflow.tracking import MlflowClient
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    mean_absolute_error,
+    mean_absolute_percentage_error,
+    mean_squared_error,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OrdinalEncoder
 
 # Configure logger
 logging.basicConfig(
@@ -274,12 +276,35 @@ class ModelFactory:
 
             mlflow.log_metrics(metrics)
 
-            mlflow.sklearn.log_model(
+            # [ALERTE MLOPS] Model Evaluation Gate : Champion vs Challenger
+            model_info = mlflow.sklearn.log_model(
                 sk_model=model,
                 artifact_path="model",
-                registered_model_name=self.config["registry_name"],
                 serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE,
             )
+            
+            # Enregistrement "brouillon"
+            reg_model_name = self.config["registry_name"]
+            new_version = mlflow.register_model(model_info.model_uri, reg_model_name)
+            
+            # Évaluation automatique
+            client = MlflowClient()
+            try:
+                champion_version = client.get_model_version_by_alias(reg_model_name, "Champion")
+                champion_run = client.get_run(champion_version.run_id)
+                champion_score = champion_run.data.metrics.get("f1_weighted", 0.0)
+            except Exception:
+                # Aucun champion existant (premier run)
+                champion_score = -1.0
+                
+            challenger_score = metrics["f1_weighted"]
+            
+            if challenger_score > champion_score:
+                logger.info(f"🏆 Promotion: Challenger (F1={challenger_score:.4f}) bat le Champion (F1={champion_score:.4f})")
+                client.set_registered_model_alias(reg_model_name, "Champion", new_version.version)
+            else:
+                logger.warning(f"❌ Rejet: Challenger (F1={challenger_score:.4f}) n'a pas battu le Champion (F1={champion_score:.4f})")
+                client.set_registered_model_alias(reg_model_name, "Challenger_Rejected", new_version.version)
 
             logger.info(f"Family A trained. Metrics: {metrics}")
             return run.info.run_id
@@ -355,12 +380,35 @@ class ModelFactory:
 
             mlflow.log_metrics(metrics)
 
-            mlflow.sklearn.log_model(
+            # [ALERTE MLOPS] Model Evaluation Gate : Champion vs Challenger
+            model_info = mlflow.sklearn.log_model(
                 sk_model=model,
                 artifact_path="model",
-                registered_model_name=self.config["registry_name"],
                 serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE,
             )
+            
+            # Enregistrement "brouillon"
+            reg_model_name = self.config["registry_name"]
+            new_version = mlflow.register_model(model_info.model_uri, reg_model_name)
+            
+            # Évaluation automatique
+            client = MlflowClient()
+            try:
+                champion_version = client.get_model_version_by_alias(reg_model_name, "Champion")
+                champion_run = client.get_run(champion_version.run_id)
+                champion_score = champion_run.data.metrics.get("f1_weighted", 0.0)
+            except Exception:
+                # Aucun champion existant (premier run)
+                champion_score = -1.0
+                
+            challenger_score = metrics["f1_weighted"]
+            
+            if challenger_score > champion_score:
+                logger.info(f"🏆 Promotion: Challenger (F1={challenger_score:.4f}) bat le Champion (F1={champion_score:.4f})")
+                client.set_registered_model_alias(reg_model_name, "Champion", new_version.version)
+            else:
+                logger.warning(f"❌ Rejet: Challenger (F1={challenger_score:.4f}) n'a pas battu le Champion (F1={champion_score:.4f})")
+                client.set_registered_model_alias(reg_model_name, "Challenger_Rejected", new_version.version)
 
             logger.info(f"Family B trained. Metrics: {metrics}")
             return run.info.run_id
