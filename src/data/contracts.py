@@ -65,3 +65,25 @@ def validate_vehicules_data(df: pd.DataFrame) -> pd.DataFrame:
 
 def validate_usager_data(df: pd.DataFrame) -> pd.DataFrame:
     return BAACUsagerSchema.validate(df)
+
+
+# Schema permissif pour l'ingestion brute (Raw data contract)
+raw_caracteristiques_schema = pa.DataFrameSchema(
+    columns={
+        "num_acc": pa.Column(int, required=True),
+        "jour": pa.Column(int, required=False),
+        "mois": pa.Column(int, required=False),
+        "an": pa.Column(int, required=False),
+        "lum": pa.Column(int, required=False),
+        "dep": pa.Column(str, required=False),
+        "com": pa.Column(str, required=False),
+        "agg": pa.Column(int, required=False),
+        "int": pa.Column(int, required=False),
+        "atm": pa.Column(int, required=False),
+        "col": pa.Column(int, required=False),
+        "lat": pa.Column(float, required=False),
+        "long": pa.Column(float, required=False),
+    },
+    strict=False,
+    coerce=False,
+)

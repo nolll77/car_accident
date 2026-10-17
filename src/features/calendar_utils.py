@@ -86,3 +86,16 @@ def is_vacances_scolaires(date: datetime.date, zone: str = "C") -> bool:
         return True
 
     return False
+
+
+def add_french_holidays(
+    df: pd.DataFrame, date_col: str = "event_timestamp"
+) -> pd.DataFrame:
+    """Add 'is_ferie' boolean column to DataFrame based on date_col."""
+    df_out = df.copy()
+    if date_col in df_out.columns:
+        dates = pd.to_datetime(df_out[date_col])
+        df_out["is_ferie"] = dates.apply(
+            lambda ts: is_ferie(ts.date()) if pd.notna(ts) else False
+        )
+    return df_out

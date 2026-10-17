@@ -206,7 +206,9 @@ def predict_gravity(famille: str, usager_id: str, background_tasks: BackgroundTa
             }
         }
 
-        response = requests.post(MLFLOW_SERVE_URL, json=payload, timeout=3.0)  # P1: Added explicit timeout
+        response = requests.post(
+            MLFLOW_SERVE_URL, json=payload, timeout=3.0
+        )  # P1: Added explicit timeout
 
         if response.status_code != 200:
             raise Exception(
@@ -217,9 +219,13 @@ def predict_gravity(famille: str, usager_id: str, background_tasks: BackgroundTa
         predicted_class = int(prediction[0])
 
         # [ALERTE MLOPS] Shadow Logging Asynchrone : Découplé du chemin critique !
-        DB_URL = os.environ.get("DATABASE_URL", "postgresql://mlops:${POSTGRES_PASSWORD}@db:5432/mlops_db")
+        DB_URL = os.environ.get(
+            "DATABASE_URL", "postgresql://mlops:${POSTGRES_PASSWORD}@db:5432/mlops_db"
+        )
         if os.environ.get("ENV") == "test" or not os.environ.get("FEAST_REDIS_HOST"):
-            DB_URL = os.environ.get("DATABASE_URL_LOCAL", "postgresql://mlops:mock@localhost:5432/mlops_db")
+            DB_URL = os.environ.get(
+                "DATABASE_URL_LOCAL", "postgresql://mlops:mock@localhost:5432/mlops_db"
+            )
 
         background_tasks.add_task(
             write_shadow_log_async,
