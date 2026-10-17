@@ -1,0 +1,3 @@
+[submodule "agentic-ops-core"]
+	path = agentic-ops-core
+	url = https://github.com/nolll77/agentic-ops.git
