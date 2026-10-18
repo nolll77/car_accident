@@ -18,7 +18,10 @@ RUN pip install --no-cache-dir \
     pandas \
     scikit-learn \
     "feast[postgres,redis]==0.47.0" \
-    pydantic
+    pydantic \
+    requests \
+    sqlalchemy \
+    psycopg2-binary
 
 # Copier le code source de l'API
 COPY app/ ./app/
