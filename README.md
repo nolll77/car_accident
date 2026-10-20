@@ -110,6 +110,7 @@ n'implique pas la creation d'un ticket distant ni un deploiement de modele.
 18. [Depannage](#18-depannage)
 19. [Limites connues et points a verifier](#19-limites-connues-et-points-a-verifier)
 20. [Glossaire](#20-glossaire)
+21. [Dossiers d'architecture et Bibles MLOps (`docs/`)](#21-dossiers-darchitecture-et-bibles-mlops-docs)
 
 ---
 
@@ -417,6 +418,18 @@ est consommee a la fois par dbt, Feast et le serving.
 
 ## 7. Entrepot et construction des variables
 
+### Documents de reference et bibles d'architecture (`docs/`)
+
+Pour approfondir la conception analytique et les choix d'ingenierie, deux documents fondateurs sont consultables sous `docs/` :
+
+- [`docs/data_warehouse_genesis.md`](docs/data_warehouse_genesis.md) (**Genese du Data Warehouse MLOps**) :
+  Boussole architecturale expliquant pourquoi l'entrepot est concu comme un sous-produit essentiel du monitoring en production. Details de la defense d'architecture :
+  - **Grain mismatch** : distinction entre le grain macroscopique « Accident » (comptages BI, KPIs) et le grain d'entrainement fin « Usager » (mesure de gravite) pour eviter les duplications artificielles par explosion combinatoire ;
+  - **Schema en etoile strict versus Flocon** : refus de la sur-normalisation inutile ;
+  - **`PostgreSQL` versus Lakehouse** : justification du rejet d'une stack lourde `MinIO` + `Apache Iceberg` + `Trino` pour un volume annuel maitrise (~100 Mo).
+- [`docs/bible_warehouse.md`](docs/bible_warehouse.md) (**Bible des Mega Copier-Coller Warehouse**) :
+  Referentiel exhaustif (1800+ lignes) formalisant le mapping vivant entre les concepts Data Warehouse classiques et les briques MLOps du projet (ingestion, `dbt`, Feature Store `Feast`, monitoring). Details des 6 cas d'usage metier BAAC et de la modelisation des tables de faits (`fact_accident`, `fact_accident_usager`) et des dimensions (`dim_lieu`, `dim_usager`, `dim_vehicule`, `dim_conditions`).
+
 ### dbt
 
 Le projet dbt est dans `dbt_warehouse/`. La configuration place les modeles en
@@ -647,6 +660,13 @@ possibles a des cas de derive, d'infrastructure ou de collapse de modele. Ils
 ne doivent pas etre confondus avec une action de retrain/deploiement securisee
 et generalisee. Verifier les effets, les chemins de donnees et la politique
 avant d'executer une simulation qui ecrit des fichiers ou modifie une base.
+
+### Documents de reference : Data Observability et propagation des defaillances (`docs/`)
+
+- [`docs/bi_observability_genesis.md`](docs/bi_observability_genesis.md) (**Genese de la Data Observability**) :
+  Analyse comparative et justification du choix d'**Apache Superset** face a `Grafana` et `Metabase` pour la couche de restitution analytique : capacites SQL Lab « SQL-first » pour data engineers, requetage de jointures complexes sur l'entrepot `dbt`/`PostgreSQL`, et cartographie geographique des points chauds d'accidents (heatmaps lat/long).
+- [`docs/mlops_failure_propagation_graph.md`](docs/mlops_failure_propagation_graph.md) (**Graphe de propagation des defaillances MLOps**) :
+  Modelisation causale de l'effet domino a travers les couches de la stack. Identifie les 7 sources racines (`Infra`, `Data`, `Features`, `Temps`, `Training`, `Securite`, `Humain`), les 3 modes de propagation (cascade technique bruyante, cascade silencieuse destructrice de valeur metier, cascade temporelle retardee), la *Silent Failure Factory* a l'intersection `Feature + Temps + Data`, et la criticite d'une defaillance du sous-systeme d'observabilite.
 
 ## 12. Agentic Control Plane et gouvernance
 
@@ -1098,14 +1118,28 @@ frontieres entre demonstration, integration locale et exigences de production.
 
 ---
 
+## 21. Dossiers d'architecture et Bibles MLOps (`docs/`)
+
+Le dossier [`docs/`](docs/) rassemble les bibles de conception, les arbitrages d'ingenierie et les modeles de defaillances documentes pour le projet :
+
+| Document | Role et Perimetre | Sujets Cles & Arbitrages |
+|---|---|---|
+| [`docs/data_warehouse_genesis.md`](docs/data_warehouse_genesis.md) | Boussole conceptuelle du Data Warehouse | Philosophie de l'entrepot pour le monitoring MLOps, defense `PostgreSQL` vs Lakehouse (`MinIO` + `Iceberg` + `Trino`), schema en etoile strict vs flocon, grain mismatch usager vs accident. |
+| [`docs/bible_warehouse.md`](docs/bible_warehouse.md) | Bible technique de reference Warehouse & ETL | Specification detaillee du schema en etoile (1800+ lignes), modelisation `dbt`, mapping des concepts DW vers livrables MLOps, modelisation des tables de faits (`fact_accident`, `fact_accident_usager`) et dimensions, les 6 use cases metier BAAC. |
+| [`docs/bi_observability_genesis.md`](docs/bi_observability_genesis.md) | Genese de la Data Observability | Choix et defense d'**Apache Superset** vs `Grafana` / `Metabase`, interface SQL Lab « SQL-first », monitoring de derive de schema, detection d'orphelins et heatmaps d'accidents. |
+| [`docs/mlops_failure_propagation_graph.md`](docs/mlops_failure_propagation_graph.md) | Graphe causal de propagation des pannes | Effet domino des 7 sources racines (`Infra`, `Data`, `Features`, `Temps`, `Training`, `Securite`, `Humain`), cascades silencieuses, piege de l'intersection `Feature + Temps + Data` (*Silent Failure Factory*), et impact critique d'une panne d'observabilite. |
+
+---
+
 ## Documentation et prochaines etapes
 
 - Ce fichier est le README de reference du depot.
 - Le [document d'architecture global](ARCHITECTURE_MLOPS_GLOBALE.md) contient
   une presentation conceptuelle complementaire ; ses commandes et details
   operationnels doivent etre compares aux configurations actuelles.
+- Les documents de reference et bibles d'ingenierie sont consultables dans le dossier [`docs/`](docs/).
 - Lire le code de l'etape concernee avant de lancer un traitement destructif ou
   une integration externe.
 - Lors d'une modification de feature ou de cible, synchroniser le pipeline de
-  donnees, les contrats, dbt, Feast, l'entrainement, le serving, le drift et
+  donnees, les contrats, `dbt`, `Feast`, l'entrainement, le serving, le drift et
   les tests concernes.
