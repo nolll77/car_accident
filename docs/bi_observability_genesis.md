@@ -406,3 +406,12 @@ Surveiller la relation psychologique entre le modèle et les utilisateurs métie
   - **Taux de valeurs par défaut/constantes** : Détecte l'anti-pattern de la feature fantôme (ex: remplissage massif par 0 ou NaN).
   - **Analyse de distribution glissante** : Détecte un shift comportemental ou sémantique lent avant qu'il ne détruise la qualité du modèle.
   - **Parité Offline/Online** : Mismatch temporel entre ce qui est stocké dans PostgreSQL et servi dans Redis.
+
+### Dashboard : MCP `SSE` Streaming, Quorum Judiciaire & Conformité EU AI Act Art. 12 (`v0.2.0`)
+- **Objectif** : Superviser la santé des flux temps réel `GET /mcp/events`, la contre-pression (*backpressure*) des clients lents, les verdicts contradictoires de l'`InspectorAgent` et l'intégrité cryptographique des packs d'audit réglementaires.
+- **Panneaux clés** :
+  - **Sessions `SSE` Actives & Rejets `503`** : Jauge `len(SessionRegistry)` vs plafond `MCP_SSE_MAX_SESSIONS` (`100` par défaut) et taux de réponses `SSE_SESSION_LIMIT_REACHED`.
+  - **Backpressure *Drop-Oldest* par Abonné (`Subscriber.dropped`)** : Détection des clients MCP lents dont la file bornée (`64` événements) évince les anciens snapshots sans jamais ralentir le producteur.
+  - **Télémétrie `mlops://telemetry/live/{drift,latency}` & Provenance** : Étiquetage explicite `source="cac_pull"` vs `source="simulated"` (dérive `Evidently`) et quantiles interpolés `p50`/`p95`/`p99` de `agentic_ops_llm_latency_seconds` (`role="inspector"`, `role="remediation"`, etc.).
+  - **Quorum Judiciaire (`InspectorAgent`)** : Répartition des verdicts `inspector_quorum_pass`, `inspector_quorum_veto` (`ALLOW` $\to$ `DENY`) et `inspector_unavailable_fail_closed` (`ALLOW` $\to$ `REQUIRE_APPROVAL` sur timeout LLM).
+  - **Intégrité Pack EU AI Act Art. 12** : Statut continu `linear_chain_valid`, `hmac_signatures_valid` et alerte critique si `signing_key_provenance == "INSECURE_DEFAULT_DUMMY_KEY"` hors environnement de test.
